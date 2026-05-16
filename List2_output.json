@@ -1,0 +1,29 @@
+[
+  {
+    "steel_size": "150x75x5x7",
+    "design_code": "2G2",
+    "steel_standard": "SS400",
+    "steel_type": "H",
+    "length": 2004,
+    "quantity": 1,
+    "usage_count": 1
+  },
+  {
+    "steel_size": "150x75x5x7",
+    "design_code": "2G3",
+    "steel_standard": "SS400",
+    "steel_type": "H",
+    "length": 1004,
+    "quantity": 1,
+    "usage_count": 1
+  },
+  {
+    "steel_size": "150x75x5x7",
+    "design_code": "2G4",
+    "steel_standard": "SS400",
+    "steel_type": "H",
+    "length": 4001,
+    "quantity": 1,
+    "usage_count": 1
+  }
+]
