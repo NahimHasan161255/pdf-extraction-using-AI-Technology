@@ -12,21 +12,15 @@
     "remarks": "全断面"
   },
   {
-    "steel_size": "H-496x199x9x14",
-    "design_code": "G1A",
-    "floor": "PH",
-    "remarks": "全断面"
-  },
-  {
-    "steel_size": "H-340x250x9x14",
-    "design_code": "G2",
-    "floor": "PH",
-    "remarks": "全断面"
-  },
-  {
     "steel_size": "H-400x200x8x13",
     "design_code": "G1",
     "floor": "2",
+    "remarks": "全断面"
+  },
+  {
+    "steel_size": "H-496x199x9x14",
+    "design_code": "G1A",
+    "floor": "PH",
     "remarks": "全断面"
   },
   {
@@ -34,6 +28,12 @@
     "design_code": "G1A",
     "floor": "2",
     "remarks": "ピン接合 TYPE-E GPL-12\n6x2-M22"
+  },
+  {
+    "steel_size": "H-340x250x9x14",
+    "design_code": "G2",
+    "floor": "PH",
+    "remarks": "全断面"
   },
   {
     "steel_size": "H-582x300x12x17",

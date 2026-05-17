@@ -24,7 +24,7 @@
 ```bash
 python -m venv venv
 .\venv\Scripts\activate
-pip install pdfplumber
+pip install pdfplumber reportlab
 ```
 
 2. PDFデータの抽出 (完全オフライン実行):

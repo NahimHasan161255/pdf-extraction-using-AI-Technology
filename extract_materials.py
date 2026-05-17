@@ -1,6 +1,84 @@
 import json
 import re
 import pdfplumber
+import os
+import glob
+
+try:
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib import colors
+    from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.lib.styles import getSampleStyleSheet
+    pdfmetrics.registerFont(UnicodeCIDFont('HeiseiKakuGo-W5'))
+except ImportError:
+    pass
+
+def generate_pdf(data, output_file):
+    doc = SimpleDocTemplate(output_file, pagesize=landscape(A4))
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    if not data:
+        return
+        
+    styleN = styles['Normal']
+    styleN.fontName = 'HeiseiKakuGo-W5'
+    
+    # 汎用的な列の順序と日本語ヘッダーの定義
+    column_def = [
+        ("design_code", "符号"),
+        ("floor", "階"),
+        ("steel_standard", "鋼材規格"),
+        ("steel_type", "鋼材種類"),
+        ("steel_size", "鋼材サイズ"),
+        ("length", "長さ"),
+        ("quantity", "台数"),
+        ("usage_count", "使用数"),
+        ("remarks", "備考")
+    ]
+    
+    # データセットに実際に存在するキーを特定
+    existing_keys = set()
+    for item in data:
+        existing_keys.update(item.keys())
+        
+    # 存在するキーのみを抽出し、定義された順序で動的ヘッダーを作成
+    active_cols = [col for col in column_def if col[0] in existing_keys]
+    
+    # 未知のキー（column_defに定義されていない新しい列）があれば末尾に追加
+    known_keys = {col[0] for col in column_def}
+    unknown_keys = existing_keys - known_keys
+    for uk in sorted(unknown_keys):
+        active_cols.append((uk, uk.capitalize()))  # フォールバックとしてキー名をそのままヘッダーにする
+    
+    headers = [col[1] for col in active_cols]
+    table_data = [headers]
+    
+    # 動的に行データを生成
+    for item in data:
+        row = []
+        for key, _ in active_cols:
+            val = item.get(key, "")
+            # PDFの見た目のため、全断面の場合はセルを空白にする
+            if key == "remarks" and val == "全断面":
+                val = ""
+            row.append(str(val))
+        table_data.append(row)
+            
+    t = Table(table_data)
+    t.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (-1,-1), 'HeiseiKakuGo-W5'),
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('PADDING', (0,0), (-1,-1), 6),
+    ]))
+    
+    elements.append(t)
+    doc.build(elements)
 
 def is_steel_size(text):
     if not text: return False
@@ -106,7 +184,8 @@ def extract_unified(table):
     return extracted
 
 def main():
-    pdf_files = ["List1.pdf", "List2.pdf"]
+    # ディレクトリ内のすべてのPDFファイルを動的に取得 (課題.pdfなどは除外)
+    pdf_files = [f for f in glob.glob("*.pdf") if "課題" not in f and "Task" not in f and not f.endswith("_output.pdf")]
     
     for pdf_file in pdf_files:
         try:
@@ -121,9 +200,21 @@ def main():
                             if item not in all_results:
                                 all_results.append(item)
             
-            output_file = pdf_file.replace(".pdf", "_output.json")
-            with open(output_file, "w", encoding="utf-8") as f:
+            # 抽出した結果を1列目（design_code）でソート
+            all_results.sort(key=lambda x: str(x.get("design_code", "")))
+            
+            # JSON出力
+            json_file = pdf_file.replace(".pdf", "_output.json")
+            with open(json_file, "w", encoding="utf-8") as f:
                 json.dump(all_results, f, ensure_ascii=False, indent=2)
+                
+            # PDF出力
+            pdf_out_file = pdf_file.replace(".pdf", "_output.pdf")
+            try:
+                generate_pdf(all_results, pdf_out_file)
+                print(f"Generated {pdf_out_file}")
+            except Exception as e:
+                print(f"Failed to generate PDF for {pdf_file}: {e}")
                 
         except Exception as e:
             pass
